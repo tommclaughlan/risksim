@@ -2,13 +2,17 @@
 #include "Army.h"
 #include "Player.h"
 
-Country::Country(int c) : 
-	index_(c) {
+Country::Country() {
 }
 
-void Country::addInfantry(Player p) {
-	if(army_.size() == 0)
-		army_.setPlayer(p);
+Country::Country(int c) : 
+	index_(c) {
+	army_ = new Army();
+}
+void Country::addInfantry(int n) {
+	army_->addInfantry(n);
+}
 
-	army_.addInfantry();
+void Country::setPlayer(Player* p) {
+	player_ = p;
 }

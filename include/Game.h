@@ -16,8 +16,8 @@ public:
 	void setupBoard();
 	void setupPlayers();
 private:
-	std::map<Country, std::set<Country> > board_;
-	std::vector<std::pair<Player,std::vector<Country> > > players_;	
+	std::vector<std::pair<Country*, std::vector<Country*> > > board_;
+	std::vector<Player*> players_;	
 	std::vector<std::string> countries_;
 
 

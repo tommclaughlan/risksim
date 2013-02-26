@@ -2,8 +2,8 @@
 #define RISK_Country_H
 
 #include <vector>
+#include <string>
 #include "Army.h"
-
 class Player;
 
 enum Group {
@@ -17,17 +17,23 @@ enum Group {
 class Country {
 
 public:
+	Country();
 	Country(int c);
 	Group getGroup();
 	int getIndex() const {return index_; }
-	Army getArmy() const { return army_; }
-	void addInfantry(Player p);
+	std::string getName() const {return name_; }
+	Army* getArmy() const { return army_; }
+	Player* getPlayer() const { return player_; }
+	void addInfantry(int n);
+	void setPlayer(Player* p);
 
     bool operator<(const Country& rhs) const { return getIndex() < rhs.getIndex(); }
 
 private:
-	Army army_;
+	Army* army_;
 	int index_;
+	Player* player_;
+	std::string name_;
 
 };
 

@@ -9,12 +9,15 @@
 
 using namespace std;
 
-Game::Game() {	
-	vector<Country> s;
-	players_.push_back(pair<Player,vector<Country> >(Player("A"),s));
-	players_.push_back(pair<Player,vector<Country> >(Player("B"),s));
-	players_.push_back(pair<Player,vector<Country> >(Player("C"),s));
-	players_.push_back(pair<Player,vector<Country> >(Player("D"),s));
+Game::Game() {
+	Player* p1 = new Player("A");
+	players_.push_back(p1);
+	Player* p2 = new Player("B");
+	players_.push_back(p2);
+	Player* p3 = new Player("C");
+	players_.push_back(p3);
+	Player* p4 = new Player("D");
+	players_.push_back(p4);
 
 	countries_.push_back("Alaska");
 	countries_.push_back("Alberta");
@@ -69,15 +72,19 @@ void Game::setupBoard() {
 		getline(readBoard, line, '\n');
 		int elem;
 		stringstream ss(line);
-		vector<Country> c;
+		vector<Country*> c;
 
 		while(ss >> elem) {
-			c.push_back(Country(elem-1));
+			Country* newc = new Country(elem-1);
+			c.push_back(newc);
 		}
 
-		Country home = Country(c[0]);
+		Country* home = c[0];
 		c.erase(c.begin());
-		board_.insert(pair<Country,set<Country> >(home, set<Country>(c.begin(),c.end())));
+		pair<Country*, vector<Country*> > p;
+		p.first = home;
+		p.second = c;
+		board_.push_back(p);
 	}
 
 	// for(map<Countries,set<Countries> >::const_iterator it=board_.begin(); it != board_.end(); ++it) {
@@ -105,20 +112,39 @@ void Game::setupPlayers() {
 	random_shuffle(random.begin(), random.end());
 
 	for(int i=0; i<42; ++i) {
-		players_.at(i%4).second.push_back(Country(random.at(i)));
+		pair<Country*, vector<Country*> > p = board_.at(random[i]);
+		Player* player = players_.at(i%players_.size());
+		p.first->setPlayer(player);
+		cout << "Player " << p.first->getPlayer()->getName() << " drew " <<  countries_[p.first->getIndex()] << endl;
 	}
 
-	for(int i=0; i<players_.size(); ++i) {
-		vector<Country> s = players_.at(i).second;
-		for(vector<Country>::iterator it = s.begin(); it != s.end(); ++it) {
-			cout << "Player " << players_.at(i).first.getName() << " drew " << countries_[(*it).getIndex()] << endl;
-			it->addInfantry(players_.at(i).first);
+	for(vector<Player*>::iterator pl = players_.begin(); pl != players_.end(); ++pl) {
+		cout << (*pl)->getName() << endl;
+		int menRemaining = menPerPlayer;
+		for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
+			cout << countries_[it->first->getIndex()] << " " << it->first->getPlayer()->getName() << endl;
+			if((*it).first->getPlayer() == (*pl)) {
+				(*it).first->addInfantry(1);
+				menRemaining--;
+				//cout << "Added 1 men to " << countries_[(*it).first->getIndex()] << endl;
+			}
 		}
-
-
+		while(menRemaining > 0){
+			cout << menRemaining << endl;
+			for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
+				if((*it).first->getPlayer() == (*pl)) {
+					int m = rand() % 2;
+					m = m > menRemaining ? 0 : m;
+					(*it).first->addInfantry(m);
+					menRemaining-=m;
+					//cout << "Added " << m << " men to " << countries_[(*it).first->getIndex()] << endl;
+				}
+			}
+		}
 	}
-
-	//now place troops in those territories, at least one in each
+	for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
+		cout << "Player " << it->first->getPlayer()->getName() << "'s country " << countries_[it->first->getIndex()] << " has " << it->first->getArmy()->size() << " men" << endl;
+	}
 
 	
 }

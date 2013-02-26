@@ -9,15 +9,10 @@ public:
 	Army();
 
 	int size() const { return size_; }
-	Player getPlayer() const { return player_; }
-	void setPlayer(Player p);
-	void addInfantry();
+	void addInfantry(int n);
 
 private:
 	int size_;
-	Player player_;
-
-
 
 };
 
