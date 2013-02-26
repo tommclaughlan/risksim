@@ -61,6 +61,25 @@ Game::Game() {
 	countries_.push_back("Indonesia");
 	countries_.push_back("New Guinea");
 	countries_.push_back("West Australia");
+
+	for(int i=0; i<countries_.size(); ++i) {
+		Country* c = new Country(i);
+		country_objects_.push_back(c);
+	}
+}
+
+Game::~Game() {
+	for(vector<Player*>::iterator p = players_.begin(); p != players_.end(); ++p)
+		delete *p;
+	players_.clear();
+
+	for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
+		delete it->first;
+		it->second.clear();
+	}
+	board_.clear();
+
+
 }
 
 void Game::setupBoard() {
@@ -75,7 +94,7 @@ void Game::setupBoard() {
 		vector<Country*> c;
 
 		while(ss >> elem) {
-			Country* newc = new Country(elem-1);
+			Country* newc = country_objects_[elem-1];
 			c.push_back(newc);
 		}
 
@@ -86,14 +105,6 @@ void Game::setupBoard() {
 		p.second = c;
 		board_.push_back(p);
 	}
-
-	// for(map<Countries,set<Countries> >::const_iterator it=board_.begin(); it != board_.end(); ++it) {
-	// 	cout << (*it).first << endl;
-	// 	set<Countries> tmp = (*it).second;
-	// 	for(set<Countries>::const_iterator ct=tmp.begin(); ct != tmp.end(); ++ct) {
-	// 		cout << "   " << (*ct) << endl;
-	// 	}
-	// }
 }
 
 void Game::setupPlayers() {
@@ -115,36 +126,113 @@ void Game::setupPlayers() {
 		pair<Country*, vector<Country*> > p = board_.at(random[i]);
 		Player* player = players_.at(i%players_.size());
 		p.first->setPlayer(player);
-		cout << "Player " << p.first->getPlayer()->getName() << " drew " <<  countries_[p.first->getIndex()] << endl;
+		player->addCountry(random[i]);
+		//cout << "Player " << p.first->getPlayer()->getName() << " drew " <<  countries_[p.first->getIndex()] << endl;
 	}
 
 	for(vector<Player*>::iterator pl = players_.begin(); pl != players_.end(); ++pl) {
-		cout << (*pl)->getName() << endl;
 		int menRemaining = menPerPlayer;
-		for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
-			cout << countries_[it->first->getIndex()] << " " << it->first->getPlayer()->getName() << endl;
-			if((*it).first->getPlayer() == (*pl)) {
-				(*it).first->addInfantry(1);
-				menRemaining--;
-				//cout << "Added 1 men to " << countries_[(*it).first->getIndex()] << endl;
-			}
+
+		set<int> cs = (*pl)->getCountries();
+
+		for(set<int>::const_iterator it = cs.begin(); it != cs.end(); ++it){
+			board_[(*it)].first->addInfantry(1);
+			menRemaining--;
 		}
-		while(menRemaining > 0){
-			cout << menRemaining << endl;
-			for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
-				if((*it).first->getPlayer() == (*pl)) {
-					int m = rand() % 2;
-					m = m > menRemaining ? 0 : m;
-					(*it).first->addInfantry(m);
-					menRemaining-=m;
-					//cout << "Added " << m << " men to " << countries_[(*it).first->getIndex()] << endl;
-				}
+
+		while(menRemaining>0) {
+			for(set<int>::const_iterator it = cs.begin(); it != cs.end(); ++it){
+				int m = rand() % 2;
+				m = m > menRemaining ? 0 : m;
+				board_[(*it)].first->addInfantry(m);
+				menRemaining-=m;
 			}
 		}
 	}
-	for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
-		cout << "Player " << it->first->getPlayer()->getName() << "'s country " << countries_[it->first->getIndex()] << " has " << it->first->getArmy()->size() << " men" << endl;
-	}
+	// for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
+	// 	cout << "Player " << it->first->getPlayer()->getName() << "'s country " << countries_[it->first->getIndex()] << " has " << it->first->getArmy()->size() << " men" << endl;
+	// }
 
 	
+}
+
+Move Game::takeMove(int pl) {
+
+	Player* player = players_[pl];
+
+	int r = rand() % player->getCountries().size();
+
+	set<int>::const_iterator it;
+	int from = -1;
+	int to = from;
+
+	bool validMoveExists = false;
+	while(!validMoveExists) {
+		r = rand() % player->getCountries().size();
+		it = player->getCountries().begin();
+		advance(it,r);
+		from = *it;
+		to = from;
+		vector<Country*> possibles = board_[from].second;
+		for(vector<Country*>::const_iterator cit = possibles.begin(); cit != possibles.end(); ++cit) {
+			if((*cit)->getPlayer()->getName() != player->getName() && board_[from].first->getArmy()->size() > 1)
+				validMoveExists = true;
+		}
+	}
+
+	to = board_[from].second[rand() % board_[from].second.size()]->getIndex();
+
+	cout << "From " << countries_[from] << " (Player " << player->getName() << ")" << endl;
+	cout << "To " << countries_[to] << " (Player " << board_[to].first->getPlayer()->getName() << ")" << endl;
+
+	Move turn;
+	pair<int,int> p;
+	p.first = from;
+	p.second = to;
+	turn.where = p;
+	turn.success = attack(board_[from].first, board_[to].first);
+
+	if(turn.success)
+		cout << "Move from " << countries_[from] << " to " << countries_[to] << " was successful!" << endl;
+	else
+		cout << "Move from " << countries_[from] << " to " << countries_[to] << " was not successful! :(" << endl;
+
+	return turn;
+}
+
+bool Game::attack(Country* from, Country* to) {
+	Army* attackers = from->getArmy();
+	Army* defenders = to->getArmy();
+	while (defenders->size() > 0 && attackers->size() > 1) {
+		int attackDie = attackers->size() > 3 ? 3 : attackers->size() - 1;
+		int defDie = defenders->size() > 2 ? 2 : defenders->size();
+
+		cout << attackDie << " vs " << defDie << endl;
+
+		vector<int> defendersRoll;
+		vector<int> attackersRoll;
+
+		for(int d=0; d<defDie; ++d) {
+			defendersRoll.push_back((rand() % 6) + 1);
+		}
+		for(int d=0; d<attackDie; ++d) {
+			attackersRoll.push_back((rand() % 6) + 1);
+		}
+
+		sort(attackersRoll.rbegin(), attackersRoll.rend());
+		sort(defendersRoll.rbegin(), defendersRoll.rend());
+
+		for(int d=0; d<defendersRoll.size(); ++d) {
+			if(attackersRoll[d] > defendersRoll[d])
+				defenders->killMan();
+			else
+				attackers->killMan();
+			cout << defenders->size() << endl;
+		}
+	}
+
+	if(defenders->size() == 0)
+		return true;
+	
+	return false;
 }

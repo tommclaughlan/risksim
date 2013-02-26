@@ -9,6 +9,8 @@ int main(int argc, char* argv[]) {
     game->setupBoard();
     game->setupPlayers();
 
+    game->takeMove(0);
+
     delete game;
 
     return 0;

@@ -10,6 +10,7 @@ public:
 
 	int size() const { return size_; }
 	void addInfantry(int n);
+	void killMan();
 
 private:
 	int size_;

@@ -9,16 +9,26 @@
 
 class Player;
 
+class Move {
+public:
+	std::pair<int, int> where;
+	bool success;
+};
+
 class Game {
 
 public:
 	Game();
+	~Game();
 	void setupBoard();
 	void setupPlayers();
+	Move takeMove(int pl);
+	bool attack(Country* from, Country* to);
 private:
 	std::vector<std::pair<Country*, std::vector<Country*> > > board_;
 	std::vector<Player*> players_;	
 	std::vector<std::string> countries_;
+	std::vector<Country*> country_objects_;
 
 
 };

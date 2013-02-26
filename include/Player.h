@@ -2,6 +2,7 @@
 #define RISK_Player_H
 
 #include <vector>
+#include <set>
 #include <string>
 
 class Army;
@@ -14,11 +15,11 @@ public:
 	std::string getName() const {return name_; }
 	void addCountry(int c);
 	void removeCountry(int c);
-	std::vector<int> getCountries() const {return countries_; }
+	std::set<int> getCountries() const {return countries_; }
 
 private:
 	std::string name_;
-	std::vector<int> countries_;
+	std::set<int> countries_;
 
 
 };
