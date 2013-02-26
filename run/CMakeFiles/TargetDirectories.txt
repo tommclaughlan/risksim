@@ -1,2 +1,0 @@
-/home/tom/Risk/run/CMakeFiles/Risk.dir
-/home/tom/Risk/run/CMakeFiles/test.dir

@@ -1,2 +1,0 @@
-/usr/bin/ar cr libRisk.a  CMakeFiles/Risk.dir/src/Game.cxx.o CMakeFiles/Risk.dir/src/Player.cxx.o CMakeFiles/Risk.dir/src/Country.cxx.o CMakeFiles/Risk.dir/src/Army.cxx.o
-/usr/bin/ranlib libRisk.a

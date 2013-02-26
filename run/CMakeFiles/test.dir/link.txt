@@ -1,1 +1,0 @@
-/usr/bin/c++       CMakeFiles/test.dir/main_test.cpp.o  -o test -rdynamic libRisk.a 
