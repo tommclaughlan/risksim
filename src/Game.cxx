@@ -68,6 +68,69 @@ Game::Game() {
 	}
 }
 
+Game::Game(Game* g) {
+	players_ = g->copyPlayers();
+	country_objects_ = g->copyCountryObjects();
+	countries_ = g->copyCountries();
+	//board_ = g->copyBoard();
+	setupBoard();
+	for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
+		cout << "Player " << it->first->getPlayer()->getName() << "'s country " << countries_[it->first->getIndex()] << " has " << it->first->getArmy()->size() << " men" << endl;
+	}
+}
+
+std::vector<Player*> Game::copyPlayers() {
+
+	vector<Player*> p;
+
+	for(vector<Player*>::const_iterator it = players_.begin(); it != players_.end(); ++it) {
+		Player* copy = new Player(**it);
+		p.push_back(copy);
+	}
+
+	return p;
+}
+
+std::vector<Country*> Game::copyCountryObjects() {
+
+	vector<Country*> p;
+
+	for(vector<Country*>::const_iterator it = country_objects_.begin(); it != country_objects_.end(); ++it) {
+		Country* copy = new Country(**it);
+		copy->setArmy((*it)->copyArmy());
+		p.push_back(copy);
+	}
+
+	return p;
+}
+
+std::vector<std::string> Game::copyCountries() {
+
+	vector<string> p;
+
+	for(vector<string>::const_iterator it = countries_.begin(); it != countries_.end(); ++it) {
+		string copy = *it;
+		p.push_back(copy);
+	}
+
+	return p;
+}
+
+
+// std::vector<std::pair<Country*, std::vector<Country*> > > Game::copyBoard() {
+
+// 	vector<string> p;
+
+// 	for(vector<string>::const_iterator it = countries_.begin(); it != countries_.end(); ++it) {
+// 		string copy = *it;
+// 		p.push_back(copy);
+// 	}
+
+// 	return p;
+
+// }
+
+
 Game::~Game() {
 	for(vector<Player*>::iterator p = players_.begin(); p != players_.end(); ++p)
 		delete *p;
@@ -136,7 +199,8 @@ void Game::setupPlayers() {
 		set<int> cs = (*pl)->getCountries();
 
 		for(set<int>::const_iterator it = cs.begin(); it != cs.end(); ++it){
-			board_[(*it)].first->addInfantry(1);
+			board_[(*it)].first->getArmy()->addInfantry(1);
+			cout <<(*it) << endl;
 			menRemaining--;
 		}
 
@@ -144,15 +208,15 @@ void Game::setupPlayers() {
 			for(set<int>::const_iterator it = cs.begin(); it != cs.end(); ++it){
 				int m = rand() % 2;
 				m = m > menRemaining ? 0 : m;
-				board_[(*it)].first->addInfantry(m);
+				board_[(*it)].first->getArmy()->addInfantry(m);
 				menRemaining-=m;
 			}
 		}
 	}
-	// for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
-	// 	cout << "Player " << it->first->getPlayer()->getName() << "'s country " << countries_[it->first->getIndex()] << " has " << it->first->getArmy()->size() << " men" << endl;
-	// }
-
+	for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
+		cout << "Player " << it->first->getPlayer()->getName() << "'s country " << countries_[it->first->getIndex()] << " has " << it->first->getArmy()->size() << " men" << endl;
+	}
+	cout << "Done" << endl;
 	
 }
 
@@ -162,40 +226,64 @@ Move Game::takeMove(int pl) {
 
 	int r = rand() % player->getCountries().size();
 
-	set<int>::const_iterator it;
 	int from = -1;
 	int to = from;
+	
+	set<int> cs = player->getCountries();
+	r = rand() % cs.size();
+	int n = 0;
+	
+	vector<int> froms;
 
-	bool validMoveExists = false;
-	while(!validMoveExists) {
-		r = rand() % player->getCountries().size();
-		it = player->getCountries().begin();
-		advance(it,r);
-		from = *it;
-		to = from;
-		vector<Country*> possibles = board_[from].second;
-		for(vector<Country*>::const_iterator cit = possibles.begin(); cit != possibles.end(); ++cit) {
-			if((*cit)->getPlayer()->getName() != player->getName() && board_[from].first->getArmy()->size() > 1)
-				validMoveExists = true;
-		}
+	for(set<int>::const_iterator it = cs.begin(); it != cs.end() && n < r+1; ++it, ++n) {
+		if(board_[(*it)].first->getArmy()->size() > 1)
+			froms.push_back(*it);
 	}
-
+	if(froms.size() == 0){
+		Move turn;
+		pair<int,int> p;
+		p.first = -1;
+		p.second = -1;
+		turn.where = p;
+		turn.success = false;
+		return turn;
+	}
+	else
+		from = froms[rand() % froms.size()];
+	
 	to = board_[from].second[rand() % board_[from].second.size()]->getIndex();
 
-	cout << "From " << countries_[from] << " (Player " << player->getName() << ")" << endl;
-	cout << "To " << countries_[to] << " (Player " << board_[to].first->getPlayer()->getName() << ")" << endl;
+
+	// cout << "From " << countries_[from] << " (Player " << player->getName() << ")" << endl;
+	// cout << "To " << countries_[to] << " (Player " << board_[to].first->getPlayer()->getName() << ")" << endl;
 
 	Move turn;
 	pair<int,int> p;
 	p.first = from;
 	p.second = to;
 	turn.where = p;
-	turn.success = attack(board_[from].first, board_[to].first);
-
-	if(turn.success)
-		cout << "Move from " << countries_[from] << " to " << countries_[to] << " was successful!" << endl;
+	if(player->getName() == board_[to].first->getPlayer()->getName())
+		turn.success = true;
 	else
-		cout << "Move from " << countries_[from] << " to " << countries_[to] << " was not successful! :(" << endl;
+		turn.success = attack(board_[from].first, board_[to].first);
+
+	// if(turn.success)
+	// 	cout << "Move from " << countries_[from] << " to " << countries_[to] << " was successful!" << endl;
+	// else
+	// 	cout << "Move from " << countries_[from] << " to " << countries_[to] << " was not successful! :(" << endl;
+
+	if(turn.success) {
+		if(player->getName() != board_[to].first->getPlayer()->getName()) {
+			board_[to].first->getPlayer()->removeCountry(to);
+			player->addCountry(to);
+			board_[to].first->setPlayer(player);
+		}
+		Army* f = board_[from].first->getArmy();
+		Army* t = board_[to].first->getArmy();
+		int movers = rand() % (f->size()-1) + 1;
+		f->removeInfantry(movers);
+		t->addInfantry(movers);
+	}
 
 	return turn;
 }
@@ -207,7 +295,7 @@ bool Game::attack(Country* from, Country* to) {
 		int attackDie = attackers->size() > 3 ? 3 : attackers->size() - 1;
 		int defDie = defenders->size() > 2 ? 2 : defenders->size();
 
-		cout << attackDie << " vs " << defDie << endl;
+		//cout << attackDie << " vs " << defDie << endl;
 
 		vector<int> defendersRoll;
 		vector<int> attackersRoll;
@@ -227,12 +315,33 @@ bool Game::attack(Country* from, Country* to) {
 				defenders->killMan();
 			else
 				attackers->killMan();
-			cout << defenders->size() << endl;
+			//cout << defenders->size() << endl;
 		}
+
+		if(attackers->size() <= defenders->size() && rand() % 100 < 80)
+			break;
 	}
 
 	if(defenders->size() == 0)
 		return true;
 	
 	return false;
+}
+
+int Game::boardSummary() {
+	set<int> Acs = players_[0]->getCountries();
+	int score = Acs.size();
+	for(set<int>::const_iterator it = Acs.begin(); it != Acs.end(); ++it){
+		score += country_objects_[*it]->getArmy()->size();
+	}
+
+	// for(vector<Player*>::iterator pl = players_.begin(); pl != players_.end(); ++pl) {
+	// 	set<int> cs = (*pl)->getCountries();
+
+	// 	for(set<int>::const_iterator it = cs.begin(); it != cs.end(); ++it){
+	// 		cout << "Player " << (*pl)->getName() << " owns " << countries_[board_[(*it)].first->getIndex()] << endl;
+	// 	}
+	// }
+
+	return score;
 }

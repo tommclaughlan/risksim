@@ -5,6 +5,7 @@
 #include <iostream>
 
 Player::Player() {
+	countries_.clear();
 }
 
 Player::Player(const std::string& name) : name_(name) {

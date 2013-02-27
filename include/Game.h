@@ -19,11 +19,17 @@ class Game {
 
 public:
 	Game();
+	Game(Game* g);
 	~Game();
 	void setupBoard();
 	void setupPlayers();
 	Move takeMove(int pl);
 	bool attack(Country* from, Country* to);
+	int boardSummary();
+	std::vector<Player*> copyPlayers();
+	std::vector<Country*> copyCountryObjects();
+	std::vector<std::string> copyCountries();
+	//std::vector<std::pair<Country*, std::vector<Country*> > > copyBoard();
 private:
 	std::vector<std::pair<Country*, std::vector<Country*> > > board_;
 	std::vector<Player*> players_;	

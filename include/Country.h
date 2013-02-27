@@ -24,8 +24,10 @@ public:
 	std::string getName() const {return name_; }
 	Army* getArmy() const { return army_; }
 	Player* getPlayer() const { return player_; }
-	void addInfantry(int n);
 	void setPlayer(Player* p);
+	void setArmy(Army* a);
+
+	Army* copyArmy();
 
     bool operator<(const Country& rhs) const { return getIndex() < rhs.getIndex(); }
 

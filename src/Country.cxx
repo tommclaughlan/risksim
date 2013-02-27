@@ -9,10 +9,16 @@ Country::Country(int c) :
 	index_(c) {
 	army_ = new Army();
 }
-void Country::addInfantry(int n) {
-	army_->addInfantry(n);
-}
 
 void Country::setPlayer(Player* p) {
 	player_ = p;
+}
+
+Army* Country::copyArmy() {
+	Army* copy = new Army(*army_);
+	return copy;
+}
+
+void Country::setArmy(Army* a) {
+	army_ = a;
 }
