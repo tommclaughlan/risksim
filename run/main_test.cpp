@@ -6,17 +6,17 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 
-    Game* game = new Game();
+    // Game* game = new Game();
 
-    game->setupBoard();
-    game->setupPlayers();
+    //game->setupBoard();
+    //game->setupPlayers();
 
-    game->saveState("state.dat");
+    //game->saveState("state.dat");
 
-    delete game;
+    // delete game;
 
     int nturns = 5;
-    int nmoves = 50;
+    int nmoves = 200;
 
     vector<pair<Move,int> > stats;
 
@@ -24,9 +24,13 @@ int main(int argc, char* argv[]) {
         Game* initialGame = new Game("state.dat");
         vector<Move> moves;
         for(int i=0; i<nturns; ++i) {
+            initialGame->draft(0);
             moves.push_back(initialGame->takeMove(0));
+            initialGame->draft(1);
             initialGame->takeMove(1);
+            initialGame->draft(2);
             initialGame->takeMove(2);
+            initialGame->draft(3);
             initialGame->takeMove(3);
     	}
 
@@ -41,12 +45,13 @@ int main(int argc, char* argv[]) {
     Move bestmove;
 
     for(vector<pair<Move,int> >::const_iterator it = stats.begin(); it != stats.end(); ++it) {
-        if( (*it).second > bestscore && (*it).first.where.first != -1) {
+        if( (*it).second > bestscore && (*it).first.where.first != -1 && (*it).second) {
             bestscore = (*it).second;
             bestmove = (*it).first;
+
+            cout << "Best move is from " << bestmove.where.first << " to " << bestmove.where.second << " with a score of " << bestscore << endl;
         }
     }
-    cout << "Best move is from " << bestmove.where.first << " to " << bestmove.where.second << " with a score of " << bestscore << endl;
 
     return 0;
 }

@@ -29,6 +29,7 @@ public:
 	bool attack(Country* from, Country* to);
 	int boardSummary();
 	void saveState(const std::string& name);
+	void draft(int player);
 
 private:
 	std::vector<std::pair<Country*, std::vector<Country*> > > board_;

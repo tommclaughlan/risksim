@@ -10,6 +10,7 @@
 using namespace std;
 
 Game::Game() {
+
 	init();
 	cout << "Game::Game() init done" << endl;
 }
@@ -43,15 +44,17 @@ Game::Game(const string& state) {
 		board_[country].first->addInfantry(army);
 	}
 	existing.close();
-	cout << "Read state from file" << endl;
-	for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
-		cout << "Player " << players_[it->first->getPlayer()]->getName() << "'s country " << countries_[it->first->getIndex()] << " has " << it->first->getArmy() << " men" << endl;
-	}
+	// cout << "Read state from file" << endl;
+	// for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
+	// 	cout << "Player " << players_[it->first->getPlayer()]->getName() << "'s country " << countries_[it->first->getIndex()] << " has " << it->first->getArmy() << " men" << endl;
+	// }
 
 
 }
 
 void Game::init() {
+
+	srand(time(0));
 	Player* p1 = new Player("A");
 	players_.push_back(p1);
 	Player* p2 = new Player("B");
@@ -141,7 +144,7 @@ void Game::saveState(const string& name) {
 
 void Game::setupBoard() {
 
-	cout << "setupBoard() start" << endl;
+	//cout << "setupBoard() start" << endl;
 	ifstream readBoard("../res/board.dat");
 
 	while(!readBoard.eof()) {
@@ -164,7 +167,7 @@ void Game::setupBoard() {
 		board_.push_back(p);
 	}
 	readBoard.close();
-	cout << "setupBoard() done" << endl;
+	//cout << "setupBoard() done" << endl;
 }
 
 void Game::setupPlayers() {
@@ -179,7 +182,6 @@ void Game::setupPlayers() {
 		random.push_back(i);
 	}
 
-	srand(time(0));
 	random_shuffle(random.begin(), random.end());
 
 	for(int i=0; i<42; ++i) {
@@ -210,9 +212,9 @@ void Game::setupPlayers() {
 			}
 		}
 	}
-	for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
-		cout << "Player " << players_[it->first->getPlayer()]->getName() << "'s country " << countries_[it->first->getIndex()] << " has " << it->first->getArmy() << " men" << endl;
-	}
+	// for(vector<pair<Country*, vector<Country*> > >::iterator it = board_.begin(); it != board_.end(); ++it) {
+	// 	cout << "Player " << players_[it->first->getPlayer()]->getName() << "'s country " << countries_[it->first->getIndex()] << " has " << it->first->getArmy() << " men" << endl;
+	// }
 	cout << "Done" << endl;
 	
 }
@@ -221,17 +223,14 @@ Move Game::takeMove(int pl) {
 
 	Player* player = players_[pl];
 
-	int r = rand() % player->getCountries().size();
 	int from = -1;
 	int to = from;
 	
 	set<int> cs = player->getCountries();
-	r = rand() % cs.size();
-	int n = 0;
 	
 	vector<int> froms;
 
-	for(set<int>::const_iterator it = cs.begin(); it != cs.end() && n < r+1; ++it, ++n) {
+	for(set<int>::const_iterator it = cs.begin(); it != cs.end(); ++it) {
 		if(board_[(*it)].first->getArmy() > 1)
 			froms.push_back(*it);
 	}
@@ -259,7 +258,7 @@ Move Game::takeMove(int pl) {
 	p.second = to;
 	turn.where = p;
 	if(player->getName() == players_[board_[to].first->getPlayer()]->getName())
-		turn.success = true;
+		return takeMove(pl);
 	else
 		turn.success = attack(board_[from].first, board_[to].first);
 
@@ -282,6 +281,24 @@ Move Game::takeMove(int pl) {
 	}
 
 	return turn;
+}
+
+void Game::draft(int pl) {
+
+	Player* player = players_[pl];
+	set<int> cs = player->getCountries();
+
+	int newArmies = cs.size() / 3;
+
+	vector<int> countries;
+
+	for(set<int>::const_iterator it = cs.begin(); it != cs.end(); ++it) {
+		if(board_[(*it)].first->getArmy() > 1)
+			countries.push_back(*it);
+	}
+	for(int i=0; i<newArmies; ++i)
+		board_[countries[rand() % countries.size()]].first->addInfantry(1);
+
 }
 
 bool Game::attack(Country* from, Country* to) {
