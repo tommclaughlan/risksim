@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(RISK)
 
-#set(CMAKE_CXX_FLAGS "-g")
+set(CMAKE_CXX_FLAGS "-g")
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 

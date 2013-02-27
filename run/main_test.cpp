@@ -11,36 +11,37 @@ int main(int argc, char* argv[]) {
     game->setupBoard();
     game->setupPlayers();
 
-    Game* initialGame = new Game(game);
+    game->saveState("state.dat");
+
     delete game;
+
     int nturns = 5;
     int nmoves = 50;
 
     vector<pair<Move,int> > stats;
 
     for(int j=0; j<nmoves; ++j) {
-        Game* test = new Game(initialGame);
-        // delete game;
-        // game = test;
+        Game* initialGame = new Game("state.dat");
         vector<Move> moves;
         for(int i=0; i<nturns; ++i) {
-            moves.push_back(test->takeMove(0));
-            test->takeMove(1);
-            test->takeMove(2);
-            test->takeMove(3);
+            moves.push_back(initialGame->takeMove(0));
+            initialGame->takeMove(1);
+            initialGame->takeMove(2);
+            initialGame->takeMove(3);
     	}
 
         pair<Move,int> eval;
         eval.first = moves[0];
-        eval.second = game->boardSummary();
+        eval.second = initialGame->boardSummary();
         stats.push_back(eval);
+        delete initialGame;
     }
 
     int bestscore = 0;
     Move bestmove;
 
     for(vector<pair<Move,int> >::const_iterator it = stats.begin(); it != stats.end(); ++it) {
-        if( (*it).second > bestscore ) {
+        if( (*it).second > bestscore && (*it).first.where.first != -1) {
             bestscore = (*it).second;
             bestmove = (*it).first;
         }

@@ -3,8 +3,6 @@
 
 #include <vector>
 #include <string>
-#include "Army.h"
-class Player;
 
 enum Group {
 	NorthAmerica,
@@ -14,6 +12,7 @@ enum Group {
 	Asia,
 	Australia
 };
+
 class Country {
 
 public:
@@ -21,21 +20,18 @@ public:
 	Country(int c);
 	Group getGroup();
 	int getIndex() const {return index_; }
-	std::string getName() const {return name_; }
-	Army* getArmy() const { return army_; }
-	Player* getPlayer() const { return player_; }
-	void setPlayer(Player* p);
-	void setArmy(Army* a);
-
-	Army* copyArmy();
+	int getArmy() const { return army_; }
+	int getPlayer() const { return player_; }
+	void setPlayer(int p);
+	void addInfantry(int a);
+	void removeInfantry(int a);
 
     bool operator<(const Country& rhs) const { return getIndex() < rhs.getIndex(); }
 
 private:
-	Army* army_;
+	int army_;
 	int index_;
-	Player* player_;
-	std::string name_;
+	int player_;
 
 };
 

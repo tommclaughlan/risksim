@@ -18,22 +18,21 @@ public:
 class Game {
 
 public:
+	std::vector<std::string> countries_;
 	Game();
-	Game(Game* g);
+	Game(const std::string& state);
 	~Game();
+	void init();
 	void setupBoard();
 	void setupPlayers();
 	Move takeMove(int pl);
 	bool attack(Country* from, Country* to);
 	int boardSummary();
-	std::vector<Player*> copyPlayers();
-	std::vector<Country*> copyCountryObjects();
-	std::vector<std::string> copyCountries();
-	//std::vector<std::pair<Country*, std::vector<Country*> > > copyBoard();
+	void saveState(const std::string& name);
+
 private:
 	std::vector<std::pair<Country*, std::vector<Country*> > > board_;
-	std::vector<Player*> players_;	
-	std::vector<std::string> countries_;
+	std::vector<Player*> players_;
 	std::vector<Country*> country_objects_;
 
 

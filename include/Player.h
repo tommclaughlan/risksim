@@ -5,8 +5,6 @@
 #include <set>
 #include <string>
 
-class Army;
-
 class Player {
 
 public:

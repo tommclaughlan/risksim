@@ -1,24 +1,21 @@
 #include "Country.h"
-#include "Army.h"
-#include "Player.h"
 
 Country::Country() {
 }
 
 Country::Country(int c) : 
 	index_(c) {
-	army_ = new Army();
+	army_ = 0;
 }
 
-void Country::setPlayer(Player* p) {
+void Country::setPlayer(int p) {
 	player_ = p;
 }
 
-Army* Country::copyArmy() {
-	Army* copy = new Army(*army_);
-	return copy;
+void Country::addInfantry(int a) {
+	army_ += a;
 }
 
-void Country::setArmy(Army* a) {
-	army_ = a;
+void Country::removeInfantry(int a) {
+	army_ -= a;
 }
